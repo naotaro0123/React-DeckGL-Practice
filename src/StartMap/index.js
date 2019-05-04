@@ -5,7 +5,7 @@ import { MapStylePicker } from '../modules/controls';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
-export default class StartMap extends React.Component {
+export default class App extends React.Component {
   state = {
     style: 'mapbox://styles/mapbox/light-v9',
     viewport: {
