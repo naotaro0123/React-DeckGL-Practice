@@ -4,13 +4,19 @@ import { StaticMap } from 'react-map-gl';
 import DeckGL from 'deck.gl';
 import taxiData from '../data/taxi';
 import { renderLayers } from '../modules/deckgl-layers';
+import {
+  LayerControls,
+  MapStylePicker,
+  SCATTERPLOT_CONTROLS
+} from '../modules/controls';
+import { tooltipStyle } from '../modules/style';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const INITIAL_VIEW_STATE = {
   longitude: -74,
   latitude: 40.74,
-  zoom: 16,
+  zoom: 11,
   minZoom: 5,
   maxZoom: 20,
   pitch: 0,
@@ -19,12 +25,33 @@ const INITIAL_VIEW_STATE = {
 
 export default class Scatterplot extends React.Component {
   state = {
+    hover: {
+      x: 0,
+      y: 0,
+      hoveredObject: null
+    },
     points: [],
+    settings: Object.keys(SCATTERPLOT_CONTROLS).reduce(
+      (accu, key) => ({
+        ...accu,
+        [key]: SCATTERPLOT_CONTROLS[key].value
+      }),
+      {}
+    ),
     style: 'mapbox://styles/mapbox/light-v9'
   };
 
   componentDidMount() {
     this._processData();
+  }
+
+  _updateLayerSettings(settings) {
+    this.setState({ settings });
+  }
+
+  _onHover({ x, y, object }) {
+    const label = object ? (object.pickup ? 'Pickup' : 'Dropoff') : null;
+    this.setState({ hover: { x, y, hoveredObject: object, label } });
   }
 
   _processData() {
@@ -52,10 +79,38 @@ export default class Scatterplot extends React.Component {
   };
 
   render() {
+    const data = this.state.points;
+    if (!data.length) {
+      return null;
+    }
+    const { hover, settings } = this.state;
     return (
       <div>
+        {hover.hoveredObject && (
+          <div
+            style={{
+              ...tooltipStyle,
+              transform: `translate(${hover.x}px, ${hover.y}px)`
+            }}
+          >
+            <div>{hover.label}</div>
+          </div>
+        )}
+        <MapStylePicker
+          onStyleChange={this.onStyleChange}
+          currentStyle={this.state.style}
+        />
+        <LayerControls
+          settings={this.state.settings}
+          propTypes={SCATTERPLOT_CONTROLS}
+          onChange={settings => this._updateLayerSettings(settings)}
+        />
         <DeckGL
-          layers={renderLayers({ data: this.state.points })}
+          layers={renderLayers({
+            data: this.state.points,
+            onHover: hover => this._onHover(hover),
+            settings: this.state.settings
+          })}
           initialViewState={INITIAL_VIEW_STATE}
           controller
         >
