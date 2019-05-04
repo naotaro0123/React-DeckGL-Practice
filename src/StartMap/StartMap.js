@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
-import React, { Component } from 'react';
+import React from 'react';
 import MapGL from 'react-map-gl';
-import { MapStylePicker } from './modules/controls';
+import { MapStylePicker } from '../modules/controls';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
-export default class App extends Component {
+export default class StartMap extends React.Component {
   state = {
     style: 'mapbox://styles/mapbox/light-v9',
     viewport: {
