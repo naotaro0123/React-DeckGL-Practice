@@ -23,7 +23,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0
 };
 
-export default class Scatterplot extends React.Component {
+export default class App extends React.Component {
   state = {
     hover: {
       x: 0,

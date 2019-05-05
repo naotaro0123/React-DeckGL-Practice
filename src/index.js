@@ -3,8 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 // import App from './StartMap/index';
-import App from './Scatterplot/index';
+// import App from './Scatterplot/index';
 // import App from './Hexagons/index';
+import App from './TripLayer/index';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<App />, document.getElementById('root'));
