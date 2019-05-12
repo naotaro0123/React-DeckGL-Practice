@@ -65,6 +65,7 @@ export default class App extends React.Component {
     this.setState({
       time: ((timestamp % loopTime) / loopTime) * loopLength
     });
+    console.log(this.state.time)
     this._animationFrame = window.requestAnimationFrame(
       this._animate.bind(this)
     );

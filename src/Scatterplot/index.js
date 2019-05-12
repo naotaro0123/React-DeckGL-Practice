@@ -74,7 +74,7 @@ export default class App extends React.Component {
     });
   }
 
-  onStyleChane = style => {
+  onStyleChange = style => {
     this.setState({ style });
   };
 
@@ -114,7 +114,9 @@ export default class App extends React.Component {
           initialViewState={INITIAL_VIEW_STATE}
           controller
         >
-          <StaticMap mapboxApiAccessToken={MAPBOX_TOKEN} />
+          <StaticMap
+            mapStyle={this.state.style}
+            mapboxApiAccessToken={MAPBOX_TOKEN} />
         </DeckGL>
       </div>
     );
