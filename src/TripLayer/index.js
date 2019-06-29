@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React from 'react';
 import { StaticMap } from 'react-map-gl';
 import DeckGL from 'deck.gl';
@@ -18,15 +17,8 @@ const INITIAL_VIEW_STATE = {
   visible: true
 };
 
-export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      time: 0
-    };
-  }
-
-  _renderLayers() {
+const App = () => {
+  const renderLayers = () => {
     return [
       new TripsLayer({
         id: 'trips',
@@ -45,17 +37,59 @@ export default class App extends React.Component {
         currentTime: 100
       })
     ];
-  }
+  };
 
-  render() {
-    return (
-      <DeckGL
-        layers={this._renderLayers()}
-        initialViewState={INITIAL_VIEW_STATE}
-        controller
-      >
-        <StaticMap mapboxApiAccessToken={MAPBOX_TOKEN} />
-      </DeckGL>
-    );
-  }
-}
+  return (
+    <DeckGL
+      layers={renderLayers()}
+      initialViewState={INITIAL_VIEW_STATE}
+      controller
+    >
+      <StaticMap mapboxApiAccessToken={MAPBOX_TOKEN} />
+    </DeckGL>
+  );
+};
+
+export default App;
+
+// export default class App extends React.Component {
+//   constructor(props) {
+//     super(props);
+//     this.state = {
+//       time: 0
+//     };
+//   }
+
+//   _renderLayers() {
+//     return [
+//       new TripsLayer({
+//         id: 'trips',
+//         data: TRIP_DATA,
+//         getPath: d =>
+//           d.waypoints.map(p => [
+//             p.coordinates[0],
+//             p.coordinates[1],
+//             p.timestamp - 1554772579000
+//           ]),
+//         getColor: [253, 128, 93],
+//         opacity: 0.8,
+//         widthMinPixels: 5,
+//         rounded: true,
+//         trailLength: 200,
+//         currentTime: 100
+//       })
+//     ];
+//   }
+
+//   render() {
+//     return (
+//       <DeckGL
+//         layers={this._renderLayers()}
+//         initialViewState={INITIAL_VIEW_STATE}
+//         controller
+//       >
+//         <StaticMap mapboxApiAccessToken={MAPBOX_TOKEN} />
+//       </DeckGL>
+//     );
+//   }
+// }

@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StaticMap } from 'react-map-gl';
 import DeckGL from 'deck.gl';
 import taxiData from '../data/taxi';
@@ -23,38 +22,41 @@ const INITIAL_VIEW_STATE = {
   bearing: 0
 };
 
-export default class App extends React.Component {
-  state = {
+const App = () => {
+  const [_hover, setHover] = useState({
     hover: {
       x: 0,
       y: 0,
       hoveredObject: null
-    },
-    points: [],
-    settings: Object.keys(SCATTERPLOT_CONTROLS).reduce(
+    }
+  });
+  const [_points, setPoints] = useState([]);
+  const [_settings, setSettings] = useState(
+    Object.keys(SCATTERPLOT_CONTROLS).reduce(
       (accu, key) => ({
         ...accu,
         [key]: SCATTERPLOT_CONTROLS[key].value
       }),
       {}
-    ),
-    style: 'mapbox://styles/mapbox/light-v9'
+    )
+  );
+  const [_style, setStyle] = useState('mapbox://styles/mapbox/light-v9');
+
+  useEffect(() => {
+    // Similar to componentDidMount
+    processData();
+  });
+
+  const updateLayerSettings = settings => {
+    setSettings(settings);
   };
 
-  componentDidMount() {
-    this._processData();
-  }
-
-  _updateLayerSettings(settings) {
-    this.setState({ settings });
-  }
-
-  _onHover({ x, y, object }) {
+  const onHover = ({ x, y, object }) => {
     const label = object ? (object.pickup ? 'Pickup' : 'Dropoff') : null;
-    this.setState({ hover: { x, y, hoveredObject: object, label } });
-  }
+    setHover({ hover: { x: x, y: y, hoveredObject: object, label } });
+  };
 
-  _processData() {
+  const processData = () => {
     const points = taxiData.reduce((accu, curr) => {
       accu.push({
         position: [Number(curr.pickup_longitude), Number(curr.pickup_latitude)],
@@ -69,56 +71,48 @@ export default class App extends React.Component {
       });
       return accu;
     }, []);
-    this.setState({
-      points
-    });
-  }
-
-  onStyleChange = style => {
-    this.setState({ style });
+    setPoints(points);
   };
 
-  render() {
-    const data = this.state.points;
-    if (!data.length) {
-      return null;
-    }
-    const { hover, settings } = this.state;
-    return (
-      <div>
-        {hover.hoveredObject && (
-          <div
-            style={{
-              ...tooltipStyle,
-              transform: `translate(${hover.x}px, ${hover.y}px)`
-            }}
+  const onStyleChange = style => {
+    setStyle(style);
+  };
+
+  return (
+    <>
+      {!_points.length ? null : (
+        <div>
+          {_hover.hoveredObject && (
+            <div
+              style={{
+                ...tooltipStyle,
+                transform: `translate(${_hover.x}px, ${_hover.y}px)`
+              }}
+            >
+              <div>{_hover.label}</div>
+            </div>
+          )}
+          <MapStylePicker onStyleChange={onStyleChange} currentStyle={_style} />
+          <LayerControls
+            settings={_settings}
+            propTypes={SCATTERPLOT_CONTROLS}
+            onChange={settings => updateLayerSettings(settings)}
+          />
+          <DeckGL
+            layers={renderLayers({
+              data: _points,
+              onHover: hover => onHover(hover),
+              settings: _settings
+            })}
+            initialViewState={INITIAL_VIEW_STATE}
+            controller
           >
-            <div>{hover.label}</div>
-          </div>
-        )}
-        <MapStylePicker
-          onStyleChange={this.onStyleChange}
-          currentStyle={this.state.style}
-        />
-        <LayerControls
-          settings={this.state.settings}
-          propTypes={SCATTERPLOT_CONTROLS}
-          onChange={settings => this._updateLayerSettings(settings)}
-        />
-        <DeckGL
-          layers={renderLayers({
-            data: this.state.points,
-            onHover: hover => this._onHover(hover),
-            settings: this.state.settings
-          })}
-          initialViewState={INITIAL_VIEW_STATE}
-          controller
-        >
-          <StaticMap
-            mapStyle={this.state.style}
-            mapboxApiAccessToken={MAPBOX_TOKEN} />
-        </DeckGL>
-      </div>
-    );
-  }
-}
+            <StaticMap mapStyle={_style} mapboxApiAccessToken={MAPBOX_TOKEN} />
+          </DeckGL>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default App;

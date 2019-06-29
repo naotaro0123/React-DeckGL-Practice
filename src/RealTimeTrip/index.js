@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { PhongMaterial } from '@luma.gl/core';
 import { AmbientLight, PointLight, LightingEffect } from '@deck.gl/core';
@@ -39,60 +38,45 @@ export const INITIAL_VIEW_STATE = {
   bearing: 0
 };
 
-export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      time: 0
-    };
-  }
+const App = props => {
+  const [_time, setTime] = useState(0);
 
-  componentDidMount() {
-    this._animate();
-  }
+  useEffect(() => {
+    // Similar to componentDidMount
+    animate();
 
-  componentWillMount() {
-    if (this._animationFrame) {
-      window.cancelAnimationFrame(this._animationFrame);
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
     }
-  }
+  });
 
-  _animate() {
-    const { loopLength = 1000, animationSpeed = 30 } = this.props;
+  let animationFrame;
+  const animate = () => {
+    const { loopLength = 1000, animationSpeed = 30 } = props;
     const timestamp = Date.now() / 1000;
     const loopTime = loopLength / animationSpeed;
 
-    this.setState({
-      time: ((timestamp % loopTime) / loopTime) * loopLength
-    });
-    console.log(this.state.time)
-    this._animationFrame = window.requestAnimationFrame(
-      this._animate.bind(this)
-    );
-  }
+    setTime(((timestamp % loopTime) / loopTime) * loopLength);
+    console.log(_time);
+    animationFrame = requestAnimationFrame(animate);
+  };
 
-  _renderLayers() {
-    const {
-      buildings = BUILDING_DATA,
-      trip = TRIP_DATA,
-      trailLength = 180
-    } = this.props;
-
+  const renderLayers = () => {
     return [
       new TripsLayer({
         id: 'trips',
-        data: trip,
+        data: TRIP_DATA,
         getPath: d => d.segments,
         getColor: d => (d.vendor === 0 ? [253, 128, 93] : [23, 184, 190]),
         opacity: 0.3,
         widthMinPixels: 2,
         rounded: true,
-        trailLength,
-        currentTime: this.state.time
+        trailLength: 180,
+        currentTime: _time
       }),
       new PolygonLayer({
         id: 'buildings',
-        data: buildings,
+        data: BUILDING_DATA,
         extruded: true,
         wireframe: false,
         opacity: 0.5,
@@ -102,25 +86,23 @@ export default class App extends React.Component {
         material
       })
     ];
-  }
+  };
 
-  render() {
-    const { viewState, controller = true } = this.state;
-    return (
-      <DeckGL
-        layers={this._renderLayers()}
-        effects={[lightingEffect]}
-        initialViewState={INITIAL_VIEW_STATE}
-        viewState={viewState}
-        controller={controller}
-      >
-        <StaticMap
-          reuseMaps
-          mapStyle="mapbox://styles/mapbox/dark-v9"
-          preventStyleDiffing={true}
-          mapboxApiAccessToken={MAPBOX_TOKEN}
-        />
-      </DeckGL>
-    );
-  }
-}
+  return (
+    <DeckGL
+      layers={renderLayers()}
+      effects={[lightingEffect]}
+      initialViewState={INITIAL_VIEW_STATE}
+      controller={true}
+    >
+      <StaticMap
+        reuseMaps
+        mapStyle="mapbox://styles/mapbox/dark-v9"
+        preventStyleDiffing={true}
+        mapboxApiAccessToken={MAPBOX_TOKEN}
+      />
+    </DeckGL>
+  );
+};
+
+export default App;

@@ -1,63 +1,54 @@
-/* eslint-disable no-unused-vars */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MapGL from 'react-map-gl';
 import { MapStylePicker } from '../modules/controls';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
 
-export default class App extends React.Component {
-  state = {
-    style: 'mapbox://styles/mapbox/light-v9',
-    viewport: {
-      width: window.innerWidth,
-      height: window.innerHeight,
-      longitude: -74,
-      latitude: 40.7,
-      zoom: 11,
-      maxZoom: 16
-    }
+const App = () => {
+  const [_style, setStyle] = useState('mapbox://styles/mapbox/light-v9');
+  const [_viewport, setViewport] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    longitude: -74,
+    latitude: 40.7,
+    zoom: 11,
+    maxZoom: 16
+  });
+
+  useEffect(() => {
+    // Similar to componentDidMount
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Similar to componentWillUnmount
+    return () => {
+      window.removeEventListener('resize', resize);
+    };
+  });
+
+  const onStyleChange = style => {
+    setStyle(style);
   };
 
-  componentDidMount() {
-    window.addEventListener('resize', this._resize);
-    this._resize();
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this._resize);
-  }
-
-  onStyleChange = style => {
-    this.setState({ style });
+  const onViewportChange = viewport => {
+    setViewport({ ...viewport, _viewport });
   };
 
-  _onViewportChange = viewport => {
-    this.setState({
-      viewport: { ...this.state.viewport, ...viewport }
-    });
+  const resize = () => {
+    onViewportChange(_viewport);
   };
 
-  _resize = () => {
-    this._onViewportChange({
-      width: window.innerWidth,
-      height: window.innerHeight
-    });
-  };
+  return (
+    <div>
+      <MapStylePicker onStyleChange={onStyleChange} currentStyle={_style} />
+      <MapGL
+        {..._viewport}
+        mapStyle={_style}
+        onViewportChange={_viewport => onViewportChange(_viewport)}
+        mapboxApiAccessToken={MAPBOX_TOKEN}
+      />
+    </div>
+  );
+};
 
-  render() {
-    return (
-      <div>
-        <MapStylePicker
-          onStyleChange={this.onStyleChange}
-          currentStyle={this.state.style}
-        />
-        <MapGL
-          {...this.state.viewport}
-          mapStyle={this.state.style}
-          onViewportChange={viewport => this._onViewportChange(viewport)}
-          mapboxApiAccessToken={MAPBOX_TOKEN}
-        />
-      </div>
-    );
-  }
-}
+export default App;
